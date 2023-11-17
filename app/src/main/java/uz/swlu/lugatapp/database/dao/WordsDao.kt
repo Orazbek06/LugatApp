@@ -16,9 +16,21 @@ interface WordsDao : BaseDao<WordsEntity> {
     @Query("select count(*) from words")
     suspend fun getBasketSize(): Int
 
-    @Query("select * from words where (english like '%' || :search || '%') or (uzbek like '%' || :search || '%') or (russian like '%' || :search || '%') ORDER BY id ASC LIMIT :limit OFFSET :offset")
+    @Query("select * from words where (english like :search || '%') or (uzbek like :search || '%') or (russian like :search || '%') ORDER BY id ASC LIMIT :limit OFFSET :offset")
     suspend fun searchWord(search: String = "", limit: Int, offset: Int): List<WordsEntity>
 
     @Query("select * from words ORDER BY id ASC LIMIT :limit OFFSET :offset")
     suspend fun searchWord(limit: Int, offset: Int): List<WordsEntity>
+
+    @Query("select * from words where (english like :letter || '%') and (english like :search || '%') ORDER BY id ASC LIMIT :limit OFFSET :offset")
+    suspend fun searchLetterWord(
+        letter: String,
+        search: String = "",
+        limit: Int,
+        offset: Int
+    ): List<WordsEntity>
+
+    @Query("select * from words where (english like :letter || '%') ORDER BY id ASC LIMIT :limit OFFSET :offset")
+    suspend fun searchLetterWord(letter: String, limit: Int, offset: Int): List<WordsEntity>
+
 }

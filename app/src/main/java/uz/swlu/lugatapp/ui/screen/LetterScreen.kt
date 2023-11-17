@@ -13,7 +13,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -22,8 +21,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,19 +35,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.items
 import kotlinx.coroutines.launch
+import uz.swlu.lugatapp.database.entity.WordsEntity
 import uz.swlu.lugatapp.ui.viewmodel.MainViewModel
 import uz.swlu.lugatapp.ui.viewmodel.WordsViewModelImpl
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun LetterScreen(
+    letter: String,
     viewModel: MainViewModel = hiltViewModel<WordsViewModelImpl>(),
     onBackPress: () -> Unit
 ) {
 
     var search by remember {
         mutableStateOf("")
+    }
+
+    val words = viewModel.letterWords.collectAsLazyPagingItems()
+
+    var word by remember {
+        mutableStateOf(WordsEntity(0, "", "", ""))
     }
 
     val modalState = rememberModalBottomSheetState(
@@ -63,6 +70,7 @@ fun LetterScreen(
     ModalBottomSheetLayout(
         sheetContent = {
             ItemScreen(
+                word,
                 onBackPress = {
                     scope.launch { modalState.hide() }
                 }
@@ -82,7 +90,7 @@ fun LetterScreen(
                 CenterAlignedTopAppBar(
                     title = {
                         Text(
-                            text = "Aa",
+                            text = letter,
                             style = TextStyle(
                                 fontSize = 20.sp,
                                 lineHeight = 24.sp,
@@ -113,82 +121,28 @@ fun LetterScreen(
                     .fillMaxSize()
             ) {
 
-                TextField(
-                    value = search,
-                    onValueChange = {
-                        search = it
-                    },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "Search",
-                            tint = Color(0xFF546881)
-                        )
-                    },
-                    placeholder = {
-                        Text(
-                            text = "Qidiruv...",
-                            fontSize = 19.sp
-                        )
-                    },
-                    colors = TextFieldDefaults.colors(
-                        unfocusedTextColor = Color.Black,
-                        focusedTextColor = Color.Black,
-                        disabledTextColor = Color.Black,
-                        errorTextColor = Color.Black,
-                        disabledPlaceholderColor = Color(
-                            0xFF909DAD
-                        ),
-                        errorPlaceholderColor = Color(
-                            0xFF909DAD
-                        ),
-                        focusedPlaceholderColor = Color(
-                            0xFF909DAD
-                        ),
-                        unfocusedPlaceholderColor = Color(
-                            0xFF909DAD
-                        ),
-                        cursorColor = Color.Black,
-                        errorIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        focusedIndicatorColor = Color.Transparent,
-                        focusedContainerColor = Color.White,
-                        errorContainerColor = Color.White,
-                        disabledContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    textStyle = TextStyle(
-                        fontSize = 19.sp
-                    ),
-                    modifier = Modifier
-                        .padding(
-                            horizontal = 16.dp,
-                            vertical = 8.dp
-                        )
-                        .fillMaxWidth(),
-                    singleLine = true,
-                    maxLines = 1
-                )
-
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     contentPadding = PaddingValues(
                         start = 16.dp,
                         end = 16.dp,
-                        bottom = 60.dp
+                        bottom = 60.dp,
+                        top = 10.dp
                     )
                 ) {
-                    items(20) {
-//                        ItemVocabulary(
-//                            onWordClick = {
-//                                scope.launch {
-//                                    modalState.show()
-//                                }
-//                            }
-//                        )
+                    items(words) {
+                        it?.let {
+                            ItemVocabulary(
+                                data = it,
+                                onWordClick = {
+                                    word = it
+                                    scope.launch {
+                                        modalState.show()
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
             }

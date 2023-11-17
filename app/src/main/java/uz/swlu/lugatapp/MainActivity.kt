@@ -39,6 +39,10 @@ class MainActivity : ComponentActivity() {
                             HomeScreen(
                                 viewModel = viewModel,
                                 onLetterClick = {
+                                    viewModel.getLetterWords(
+                                        "${it[0]}",
+                                        ""
+                                    )
                                     navigationState.navigateTo(
                                         Screen.LetterContent.getRouteWithArgs(
                                             it
@@ -52,8 +56,9 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         },
-                        letterScreen = {
+                        letterScreen = { letter ->
                             LetterScreen(
+                                letter,
                                 viewModel = viewModel,
                                 onBackPress = {
                                     navigationState.navHostController.popBackStack()

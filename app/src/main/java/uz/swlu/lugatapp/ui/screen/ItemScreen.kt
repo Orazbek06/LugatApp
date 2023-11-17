@@ -1,6 +1,5 @@
 package uz.swlu.lugatapp.ui.screen
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -30,10 +29,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import uz.swlu.lugatapp.R
+import uz.swlu.lugatapp.database.entity.WordsEntity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ItemScreen(onBackPress: () -> Unit) {
+fun ItemScreen(
+    wordsEntity: WordsEntity,
+    onBackPress: () -> Unit
+) {
     Scaffold(
         modifier = Modifier
             .fillMaxWidth()
@@ -111,7 +114,7 @@ fun ItemScreen(onBackPress: () -> Unit) {
                 )
 
                 Text(
-                    text = "Abceiling",
+                    text = wordsEntity.english,
                     style = TextStyle(
                         fontSize = 32.sp,
                         fontWeight = FontWeight(590),
@@ -130,12 +133,12 @@ fun ItemScreen(onBackPress: () -> Unit) {
             ) {
 
                 Image(
-                    painter = painterResource(id = R.drawable.ic_uzbek),
-                    contentDescription = "Uzbek"
+                    painter = painterResource(id = R.drawable.ic_russian),
+                    contentDescription = "Russian"
                 )
 
                 Text(
-                    text = "Tikka qoya yoki baland bino devoridan tushish",
+                    text = wordsEntity.russian,
                     style = TextStyle(
                         fontSize = 18.sp,
                         fontWeight = FontWeight(510),
@@ -154,12 +157,12 @@ fun ItemScreen(onBackPress: () -> Unit) {
             ) {
 
                 Image(
-                    painter = painterResource(id = R.drawable.ic_russian),
-                    contentDescription = "Russian"
+                    painter = painterResource(id = R.drawable.ic_uzbek),
+                    contentDescription = "Uzbek"
                 )
 
                 Text(
-                    text = "Спуск с отвесных скал или стен высотных зданий по веревке",
+                    text = wordsEntity.uzbek,
                     style = TextStyle(
                         fontSize = 18.sp,
                         fontWeight = FontWeight(510),
@@ -168,6 +171,7 @@ fun ItemScreen(onBackPress: () -> Unit) {
                     )
                 )
             }
+
         }
 
     }

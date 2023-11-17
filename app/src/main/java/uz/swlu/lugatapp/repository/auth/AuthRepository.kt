@@ -9,7 +9,9 @@ interface AuthRepository {
 
     fun getIntroStart(): Boolean
 
-    fun insertWords(words: List<WordsEntity>): Flow<Result<String>>
+    fun insertWords(words: List<WordsEntity>): Flow<Result<Boolean>>
 
     fun searchWords(search: String? = null): Flow<PagingData<WordsEntity>>
+
+    fun searchLetterWords(letter: String, search: String? = null): Flow<PagingData<WordsEntity>>
 }

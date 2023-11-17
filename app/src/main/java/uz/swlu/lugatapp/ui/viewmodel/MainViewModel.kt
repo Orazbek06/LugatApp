@@ -16,6 +16,8 @@ interface MainViewModel {
 
     val words: Flow<PagingData<WordsEntity>>
 
+    val letterWords: Flow<PagingData<WordsEntity>>
+
     val progressFlow: Flow<Boolean>
 
     val hasLoadedWords: LiveData<Boolean>
@@ -23,6 +25,11 @@ interface MainViewModel {
     fun insertWords(workbook: Workbook)
 
     fun getWords(search: String)
+
+    fun getLetterWords(
+        letter: String,
+        search: String
+    )
 
     fun changeTableType()
 

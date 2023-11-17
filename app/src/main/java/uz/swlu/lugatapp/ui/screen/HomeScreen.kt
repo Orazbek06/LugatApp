@@ -19,10 +19,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
@@ -47,6 +49,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -57,6 +60,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -82,6 +86,7 @@ fun HomeScreen(
 ) {
 
     val context = LocalContext.current
+    val focus = LocalFocusManager.current
 
     var search by remember {
         mutableStateOf("")
@@ -104,6 +109,10 @@ fun HomeScreen(
         skipHalfExpanded = true
     )
 
+    var word by remember {
+        mutableStateOf(WordsEntity(0, "", "", ""))
+    }
+
     val scope = rememberCoroutineScope()
 
     val lazyListState = rememberLazyListState()
@@ -114,6 +123,37 @@ fun HomeScreen(
         search = lastSearch
     }
 
+    val alphabet = remember {
+        mutableStateListOf(
+            "Aa",
+            "Bb",
+            "Cc",
+            "Dd",
+            "Ee",
+            "Ff",
+            "Gg",
+            "Hh",
+            "Ii",
+            "Jj",
+            "Kk",
+            "Ll",
+            "Mm",
+            "Nn",
+            "Oo",
+            "Pp",
+            "Qq",
+            "Rr",
+            "Ss",
+            "Tt",
+            "Uu",
+            "Vv",
+            "Ww",
+            "Xx",
+            "Yy",
+            "Zz",
+        )
+    }
+
     fun insertWords() {
         scope.launch {
             val file = context.resources.openRawResource(R.raw.words)
@@ -121,8 +161,6 @@ fun HomeScreen(
             val excel = WorkbookFactory.create(file)
 
             viewModel.insertWords(excel)
-            excel.close()
-
         }
     }
 
@@ -133,14 +171,15 @@ fun HomeScreen(
     }
 
     LaunchedEffect(key1 = hasLoadedWords) {
-        if (firstInit && !hasLoadedWords) {
-            viewModel.getWords(search)
+        if (!hasLoadedWords) {
+            viewModel.getWords("")
         }
     }
 
     ModalBottomSheetLayout(
         sheetContent = {
             ItemScreen(
+                word,
                 onBackPress = {
                     scope.launch { modalState.hide() }
                 }
@@ -205,9 +244,6 @@ fun HomeScreen(
                         value = search,
                         onValueChange = {
                             search = it
-                            if (firstInit) {
-                                viewModel.getWords(search)
-                            }
                         },
                         leadingIcon = {
                             Icon(
@@ -261,7 +297,21 @@ fun HomeScreen(
                             .fillMaxWidth(),
                         singleLine = true,
                         maxLines = 1,
-                        enabled = tableType == 1
+                        enabled = tableType == 1,
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                viewModel.getWords(search)
+                                focus.clearFocus()
+                            },
+                            onSend = {
+                                viewModel.getWords(search)
+                                focus.clearFocus()
+                            },
+                            onSearch = {
+                                viewModel.getWords(search)
+                                focus.clearFocus()
+                            },
+                        )
                     )
 
                     if (tableType == 1)
@@ -312,6 +362,7 @@ fun HomeScreen(
                                     ItemVocabulary(
                                         data = it,
                                         onWordClick = {
+                                            word = it
                                             scope.launch {
                                                 modalState.show()
                                             }
@@ -366,13 +417,16 @@ fun HomeScreen(
 
                                 }
                             }
-                            items(27) {
+
+                            items(alphabet) {
                                 ItemLetter(
-                                    onLetterClick = {
-                                        onLetterClick(it)
+                                    letter = it,
+                                    onLetterClick = { str ->
+                                        onLetterClick(str)
                                     }
                                 )
                             }
+
                         }
                     }
                 }
@@ -433,7 +487,7 @@ fun ItemVocabulary(
         )
 
         Text(
-            text = data.uzbek,
+            text = data.russian,
             style = TextStyle(
                 fontSize = 16.sp,
                 lineHeight = 22.sp,
@@ -446,7 +500,7 @@ fun ItemVocabulary(
         )
 
         Text(
-            text = data.russian,
+            text = data.uzbek,
             style = TextStyle(
                 fontSize = 16.sp,
                 lineHeight = 22.sp,
@@ -462,7 +516,10 @@ fun ItemVocabulary(
 }
 
 @Composable
-fun ItemLetter(onLetterClick: (String) -> Unit) {
+fun ItemLetter(
+    letter: String,
+    onLetterClick: (String) -> Unit
+) {
     Column(
         modifier = Modifier
             .shadow(
@@ -483,13 +540,13 @@ fun ItemLetter(onLetterClick: (String) -> Unit) {
                 },
                 indication = rememberRipple()
             ) {
-                onLetterClick("Aa")
+                onLetterClick(letter)
             }
             .padding(10.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = "Aa",
+            text = letter,
             style = TextStyle(
                 fontSize = 40.sp,
                 lineHeight = 50.sp,
