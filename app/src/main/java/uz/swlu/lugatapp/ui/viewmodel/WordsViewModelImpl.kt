@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.apache.poi.ss.usermodel.Workbook
 import uz.swlu.lugatapp.app.eventValueFlow
+import uz.swlu.lugatapp.database.entity.Letter
 import uz.swlu.lugatapp.database.entity.WordsEntity
 import uz.swlu.lugatapp.pref.MyPref
 import uz.swlu.lugatapp.repository.auth.AuthRepository
@@ -37,6 +38,10 @@ class WordsViewModelImpl @Inject constructor(
 
     override val letterWords = eventValueFlow<PagingData<WordsEntity>>()
 
+    override val lazyStateValue = MutableLiveData(Pair(0, 0))
+
+    override val letters = MutableLiveData(listOf<Letter>())
+
     init {
         firstInit.value = pref.startScreen
         hasLoadedWords.value = !pref.startScreen
@@ -49,9 +54,7 @@ class WordsViewModelImpl @Inject constructor(
         }
 
         viewModelScope.launch {
-
             val sheet = workbook.getSheetAt(1)
-
             val totalCount = sheet.lastRowNum
 
             val list = ArrayList<WordsEntity>()
@@ -60,23 +63,28 @@ class WordsViewModelImpl @Inject constructor(
                 list.add(
                     WordsEntity(
                         0,
-                        sheet.getRow(i).getCell(0).stringCellValue,
-                        sheet.getRow(i).getCell(1).stringCellValue,
-                        sheet.getRow(i).getCell(2).stringCellValue,
+                        sheet.getRow(i).getCell(0).stringCellValue.trim(),
+                        sheet.getRow(i).getCell(1).stringCellValue.trim(),
+                        sheet.getRow(i).getCell(2).stringCellValue.trim(),
                     )
                 )
             }
 
             workbook.close()
 
-            repos.insertWords(list).onEach {
+            repos.insertWords(list).cachedIn(viewModelScope).onEach {
                 progressFlow.emit(false)
-                it.onSuccess { res ->
-                    firstInit.value = res
-                    hasLoadedWords.value = res
-                }
-            }.launchIn(viewModelScope)
+                firstInit.value = true
+                words.emit(it)
+                hasLoadedWords.value = true
+
+                repos.getLetters().onEach { res ->
+                    letters.value = res
+                }.launchIn(viewModelScope)
+
+            }.cachedIn(viewModelScope).launchIn(viewModelScope)
         }
+
     }
 
     override fun getWords(search: String) {
@@ -112,5 +120,17 @@ class WordsViewModelImpl @Inject constructor(
         }
     }
 
+    override fun saveState(index: Int, offset: Int) {
+        Log.d("VVVVV", "saveState: $index, $offset")
+        lazyStateValue.value = Pair(index, offset)
+    }
+
+    override fun getLetters() {
+        viewModelScope.launch {
+            repos.getLetters().onEach {
+                letters.value = it
+            }.launchIn(viewModelScope)
+        }
+    }
 
 }

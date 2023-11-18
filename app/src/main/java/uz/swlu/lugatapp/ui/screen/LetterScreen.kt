@@ -50,10 +50,6 @@ fun LetterScreen(
     onBackPress: () -> Unit
 ) {
 
-    var search by remember {
-        mutableStateOf("")
-    }
-
     val words = viewModel.letterWords.collectAsLazyPagingItems()
 
     var word by remember {
@@ -90,7 +86,7 @@ fun LetterScreen(
                 CenterAlignedTopAppBar(
                     title = {
                         Text(
-                            text = letter,
+                            text = "${letter.uppercase()}$letter",
                             style = TextStyle(
                                 fontSize = 20.sp,
                                 lineHeight = 24.sp,

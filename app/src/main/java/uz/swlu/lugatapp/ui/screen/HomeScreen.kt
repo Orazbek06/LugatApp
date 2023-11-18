@@ -1,6 +1,7 @@
 package uz.swlu.lugatapp.ui.screen
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -25,6 +26,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
@@ -32,7 +34,7 @@ import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.rounded.AccountCircle
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -45,11 +47,11 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -59,11 +61,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -71,8 +73,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.items
 import kotlinx.coroutines.launch
-import org.apache.poi.ss.usermodel.WorkbookFactory
 import uz.swlu.lugatapp.R
+import uz.swlu.lugatapp.database.entity.Letter
 import uz.swlu.lugatapp.database.entity.WordsEntity
 import uz.swlu.lugatapp.ui.viewmodel.MainViewModel
 import uz.swlu.lugatapp.ui.viewmodel.WordsViewModelImpl
@@ -85,7 +87,6 @@ fun HomeScreen(
     onAboutClick: () -> Unit
 ) {
 
-    val context = LocalContext.current
     val focus = LocalFocusManager.current
 
     var search by remember {
@@ -96,11 +97,11 @@ fun HomeScreen(
 
     val words = viewModel.words.collectAsLazyPagingItems()
 
+    val letters by viewModel.letters.observeAsState(listOf())
+
     val progress by viewModel.progressFlow.collectAsState(initial = false)
 
-    val firstInit by viewModel.firstInit.observeAsState(initial = false)
-
-    val hasLoadedWords by viewModel.hasLoadedWords.observeAsState(initial = false)
+    val lazyListValue by viewModel.lazyStateValue.observeAsState(initial = Pair(0, 0))
 
     val lastSearch by viewModel.lastSearch.observeAsState(initial = "")
 
@@ -123,57 +124,8 @@ fun HomeScreen(
         search = lastSearch
     }
 
-    val alphabet = remember {
-        mutableStateListOf(
-            "Aa",
-            "Bb",
-            "Cc",
-            "Dd",
-            "Ee",
-            "Ff",
-            "Gg",
-            "Hh",
-            "Ii",
-            "Jj",
-            "Kk",
-            "Ll",
-            "Mm",
-            "Nn",
-            "Oo",
-            "Pp",
-            "Qq",
-            "Rr",
-            "Ss",
-            "Tt",
-            "Uu",
-            "Vv",
-            "Ww",
-            "Xx",
-            "Yy",
-            "Zz",
-        )
-    }
-
-    fun insertWords() {
-        scope.launch {
-            val file = context.resources.openRawResource(R.raw.words)
-
-            val excel = WorkbookFactory.create(file)
-
-            viewModel.insertWords(excel)
-        }
-    }
-
-    LaunchedEffect(key1 = firstInit) {
-        if (!firstInit) {
-            insertWords()
-        }
-    }
-
-    LaunchedEffect(key1 = hasLoadedWords) {
-        if (!hasLoadedWords) {
-            viewModel.getWords("")
-        }
+    LaunchedEffect(key1 = null) {
+        lazyListState.animateScrollToItem(lazyListValue.first, lazyListValue.second)
     }
 
     ModalBottomSheetLayout(
@@ -213,14 +165,18 @@ fun HomeScreen(
                         IconButton(
                             onClick = { onAboutClick() }
                         ) {
-                            Icon(
-                                imageVector = Icons.Rounded.AccountCircle,
+                            Image(
+                                painter = painterResource(id = R.drawable.img_owner),
                                 contentDescription = "Action",
                                 modifier = Modifier
-                                    .size(40.dp)
+                                    .size(34.dp)
+                                    .clip(CircleShape)
                                     .border(
-                                        (0.7).dp, Color(0xFF333333),
-                                        CircleShape
+                                        width = 1.dp,
+                                        color = Color(0xFFB2BBC6),
+                                        shape = RoundedCornerShape(
+                                            size = 100.dp
+                                        )
                                     )
                             )
                         }
@@ -235,15 +191,16 @@ fun HomeScreen(
                     .padding(pad)
                     .fillMaxSize()
             ) {
-                Column(
+
+                if (tableType == 1) Column(
                     modifier = Modifier
                         .fillMaxSize()
                 ) {
-
                     TextField(
                         value = search,
                         onValueChange = {
                             search = it
+                            viewModel.getWords(search)
                         },
                         leadingIcon = {
                             Icon(
@@ -291,143 +248,167 @@ fun HomeScreen(
                         ),
                         modifier = Modifier
                             .padding(
-                                horizontal = 16.dp,
-                                vertical = 8.dp
+                                start = 16.dp,
+                                end = 16.dp,
+                                top = 10.dp,
+                                bottom = 5.dp
                             )
                             .fillMaxWidth(),
                         singleLine = true,
                         maxLines = 1,
-                        enabled = tableType == 1,
                         keyboardActions = KeyboardActions(
                             onDone = {
-                                viewModel.getWords(search)
+//                                            viewModel.getWords(search)
                                 focus.clearFocus()
                             },
                             onSend = {
-                                viewModel.getWords(search)
+//                                            viewModel.getWords(search)
                                 focus.clearFocus()
                             },
                             onSearch = {
-                                viewModel.getWords(search)
+//                                            viewModel.getWords(search)
                                 focus.clearFocus()
                             },
-                        )
-                    )
-
-                    if (tableType == 1)
-                        LazyColumn(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
-                            contentPadding = PaddingValues(
-                                start = 16.dp,
-                                end = 16.dp,
-                                bottom = 60.dp
-                            ),
-                            state = lazyListState
-                        ) {
-                            item {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = "Ro'yhat shaklida",
-                                        fontSize = 18.sp,
-                                        fontWeight = FontWeight.Medium,
-                                        color = Color(0xFF909DAD)
-                                    )
-
-                                    IconButton(
-                                        onClick = { viewModel.changeTableType() }
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.ic_cards),
-                                            contentDescription = "Card",
-                                            modifier = Modifier
-                                                .size(36.dp)
-                                                .background(
-                                                    Color.White,
-                                                    CircleShape
-                                                )
-                                                .padding(8.dp)
-                                        )
+                        ),
+                        keyboardOptions = KeyboardOptions(
+                            imeAction = ImeAction.Search
+                        ),
+                        trailingIcon = {
+                            if (search.isNotBlank()) {
+                                IconButton(
+                                    onClick = {
+                                        search = ""
+                                        viewModel.getWords("")
+                                        focus.clearFocus()
                                     }
-
-                                }
-                            }
-                            items(words) {
-                                it?.let {
-                                    ItemVocabulary(
-                                        data = it,
-                                        onWordClick = {
-                                            word = it
-                                            scope.launch {
-                                                modalState.show()
-                                            }
-                                        }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Close,
+                                        contentDescription = "Clear",
+                                        tint = Color(0xFF546881)
                                     )
                                 }
                             }
                         }
-                    else {
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(2),
-                            contentPadding = PaddingValues(
-                                start = 16.dp,
-                                end = 16.dp,
-                                bottom = 60.dp
-                            ),
-                            verticalArrangement = Arrangement.spacedBy(7.dp),
-                            horizontalArrangement = Arrangement.spacedBy(7.dp),
-                            state = lazyGridState
-                        ) {
-                            item(span = {
-                                GridItemSpan(2)
-                            }) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
+                    )
+
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            end = 16.dp,
+                            bottom = 60.dp
+                        ),
+                        state = lazyListState
+                    ) {
+                        item {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Ro'yhat shaklida",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color(0xFF909DAD)
+                                )
+
+                                IconButton(
+                                    onClick = { viewModel.changeTableType() }
                                 ) {
-                                    Text(
-                                        text = "Alifbo shaklida",
-                                        fontSize = 18.sp,
-                                        fontWeight = FontWeight.Medium,
-                                        color = Color(0xFF909DAD)
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_cards),
+                                        contentDescription = "Card",
+                                        modifier = Modifier
+                                            .size(36.dp)
+                                            .background(
+                                                Color.White,
+                                                CircleShape
+                                            )
+                                            .padding(8.dp)
                                     )
-
-                                    IconButton(
-                                        onClick = { viewModel.changeTableType() }
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.ic_lists),
-                                            contentDescription = "Card",
-                                            modifier = Modifier
-                                                .size(36.dp)
-                                                .background(
-                                                    Color.White,
-                                                    CircleShape
-                                                )
-                                                .padding(8.dp)
-                                        )
-                                    }
-
                                 }
-                            }
 
-                            items(alphabet) {
-                                ItemLetter(
-                                    letter = it,
-                                    onLetterClick = { str ->
-                                        onLetterClick(str)
+                            }
+                        }
+                        items(words) {
+                            it?.let {
+                                ItemVocabulary(
+                                    data = it,
+                                    onWordClick = {
+                                        word = it
+                                        scope.launch {
+                                            modalState.show()
+                                        }
                                     }
                                 )
                             }
-
                         }
+                    }
+                }
+                else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            end = 16.dp,
+                            bottom = 60.dp
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(7.dp),
+                        horizontalArrangement = Arrangement.spacedBy(7.dp),
+                        state = lazyGridState
+                    ) {
+                        item(span = {
+                            GridItemSpan(2)
+                        }) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Alifbo shaklida",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color(0xFF909DAD)
+                                )
+
+                                IconButton(
+                                    onClick = { viewModel.changeTableType() }
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_lists),
+                                        contentDescription = "Card",
+                                        modifier = Modifier
+                                            .size(36.dp)
+                                            .background(
+                                                Color.White,
+                                                CircleShape
+                                            )
+                                            .padding(8.dp)
+                                    )
+                                }
+
+                            }
+                        }
+
+                        items(
+                            letters.filter {
+                                it.letter.first().isLetter()
+                            }
+                        ) {
+                            if (it.letter.first().isLetter()) ItemLetter(
+                                letter = it,
+                                onLetterClick = { str ->
+                                    onLetterClick(str)
+                                }
+                            )
+                        }
+
                     }
                 }
 
@@ -446,6 +427,16 @@ fun HomeScreen(
             }
         }
     }
+
+    DisposableEffect(key1 = null) {
+        onDispose {
+            viewModel.saveState(
+                lazyListState.firstVisibleItemIndex,
+                lazyListState.firstVisibleItemScrollOffset
+            )
+        }
+    }
+
 }
 
 @Composable
@@ -517,7 +508,7 @@ fun ItemVocabulary(
 
 @Composable
 fun ItemLetter(
-    letter: String,
+    letter: Letter,
     onLetterClick: (String) -> Unit
 ) {
     Column(
@@ -540,13 +531,14 @@ fun ItemLetter(
                 },
                 indication = rememberRipple()
             ) {
-                onLetterClick(letter)
+                onLetterClick(letter.letter)
             }
             .padding(10.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
+
         Text(
-            text = letter,
+            text = "${letter.letter.first().uppercaseChar()}${letter.letter}",
             style = TextStyle(
                 fontSize = 40.sp,
                 lineHeight = 50.sp,
@@ -575,7 +567,7 @@ fun ItemLetter(
             )
 
             Text(
-                text = "120 ta so‘z",
+                text = "${letter.count} ta so‘z",
                 style = TextStyle(
                     fontSize = 16.sp,
                     lineHeight = 22.sp,

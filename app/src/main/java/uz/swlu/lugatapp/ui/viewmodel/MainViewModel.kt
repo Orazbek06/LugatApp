@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.paging.PagingData
 import kotlinx.coroutines.flow.Flow
 import org.apache.poi.ss.usermodel.Workbook
+import uz.swlu.lugatapp.database.entity.Letter
 import uz.swlu.lugatapp.database.entity.WordsEntity
 
 interface MainViewModel {
@@ -22,6 +23,10 @@ interface MainViewModel {
 
     val hasLoadedWords: LiveData<Boolean>
 
+    val lazyStateValue: LiveData<Pair<Int, Int>>
+
+    val letters: LiveData<List<Letter>>
+
     fun insertWords(workbook: Workbook)
 
     fun getWords(search: String)
@@ -32,5 +37,9 @@ interface MainViewModel {
     )
 
     fun changeTableType()
+
+    fun saveState(index: Int, offset: Int)
+
+    fun getLetters()
 
 }

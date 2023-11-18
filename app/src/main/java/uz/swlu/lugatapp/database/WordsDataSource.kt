@@ -11,12 +11,12 @@ class WordsDataSource @Inject constructor(
     private val dao: WordsDao
 ) : PagingSource<Int, WordsEntity>() {
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, WordsEntity> {
-        val page = params.key ?: 0
+        val page = params.key ?: 1
 
         return try {
             val entities = dao.searchWord(search ?: "", 20, page * 20)
 
-            Log.d("VVVVV", "getWord: DS")
+            Log.d("VVVVV", "getWord: DS: $page")
 
             LoadResult.Page(
                 data = entities,

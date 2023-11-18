@@ -67,17 +67,6 @@ fun ItemScreen(
                         )
                     }
                 },
-                actions = {
-                    IconButton(
-                        onClick = { /*TODO*/ }
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_save),
-                            contentDescription = "Action",
-                            tint = Color(0xFF07090B)
-                        )
-                    }
-                },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
             )
         },

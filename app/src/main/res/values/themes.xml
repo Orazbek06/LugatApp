@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.LugatApp" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.LugatApp" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="colorPrimaryDark">#742AE5</item>
+        <item name="android:statusBarColor">#742AE5</item>
+        <item name="android:windowTranslucentStatus">true</item>
+    </style>
 </resources>
