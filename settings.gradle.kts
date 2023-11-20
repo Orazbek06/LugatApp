@@ -13,6 +13,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Lug'at App"
+rootProject.name = "Tourism terms in English, Uzbek and Russian languages"
 include(":app")
  
