@@ -543,7 +543,7 @@ fun ItemLetter(
                 fontSize = 40.sp,
                 lineHeight = 50.sp,
                 fontWeight = FontWeight(700),
-                color = Color(0xFF0A0D10),
+                color = Color(0xFFFFFFFF),
             ),
             modifier = Modifier.padding(5.dp)
         )

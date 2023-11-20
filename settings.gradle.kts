@@ -13,6 +13,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Tourism terms in English, Uzbek and Russian languages"
+rootProject.name = "Dictionary of the Tourism terms in English, Uzbek and Russian languages"
 include(":app")
  
