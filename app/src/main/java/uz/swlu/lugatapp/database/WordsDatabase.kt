@@ -7,7 +7,7 @@ import uz.swlu.lugatapp.database.entity.WordsEntity
 
 @Database(
     entities = [WordsEntity::class],
-    version = 1
+    version = 2
 )
 abstract class WordsDatabase : RoomDatabase() {
 

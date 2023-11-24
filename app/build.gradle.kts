@@ -14,8 +14,8 @@ android {
         applicationId = "uz.swlu.lugatapp"
         minSdk = 26
         targetSdk = 33
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = 3
+        versionName = "1.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -23,12 +23,20 @@ android {
         }
     }
 
+
     buildTypes {
-        release {
-            isMinifyEnabled = false
+        getByName("debug") {
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "$project.rootDir/tools/proguard-rules-debug.pro"
+            )
+        }
+
+        named("release") {
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "$project.rootDir/tools/proguard-rules.pro"
             )
         }
     }
@@ -105,5 +113,10 @@ dependencies {
 
     kapt("androidx.room:room-ktx:2.4.3")
     implementation("androidx.room:room-ktx:2.4.3")
+
+    implementation("com.google.android.play:app-update:2.1.0")
+
+    // For Kotlin users also add the Kotlin extensions library for Play In-App Update:
+    implementation("com.google.android.play:app-update-ktx:2.1.0")
 
 }

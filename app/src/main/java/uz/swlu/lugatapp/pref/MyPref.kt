@@ -25,4 +25,10 @@ class MyPref @Inject constructor(
         }
         get() = pref.getInt("tableType", 1)
 
+    var lastVersion: Int
+        set(value) {
+            pref.edit().putInt("lastVersion", value).apply()
+        }
+        get() = pref.getInt("lastVersion", 0)
+
 }
