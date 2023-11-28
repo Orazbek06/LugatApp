@@ -166,7 +166,7 @@ fun HomeScreen(
                             onClick = { onAboutClick() }
                         ) {
                             Image(
-                                painter = painterResource(id = R.drawable.ic_launcher),
+                                painter = painterResource(id = R.drawable.img_owner),
                                 contentDescription = "Action",
                                 modifier = Modifier
                                     .size(34.dp)
@@ -177,7 +177,6 @@ fun HomeScreen(
                                         shape = CircleShape
                                     )
                                     .background(Color.White, CircleShape)
-                                    .padding(2.dp)
                             )
                         }
                     },
