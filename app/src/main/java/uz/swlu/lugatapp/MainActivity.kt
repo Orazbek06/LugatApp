@@ -24,6 +24,7 @@ import uz.swlu.lugatapp.navigation.MainNavigation
 import uz.swlu.lugatapp.navigation.Screen
 import uz.swlu.lugatapp.navigation.rememberNavigationState
 import uz.swlu.lugatapp.pref.MyPref
+import uz.swlu.lugatapp.ui.screen.AboutOwnerScreen
 import uz.swlu.lugatapp.ui.screen.AboutScreen
 import uz.swlu.lugatapp.ui.screen.HomeScreen
 import uz.swlu.lugatapp.ui.screen.LetterScreen
@@ -138,6 +139,18 @@ class MainActivity : ComponentActivity() {
                             AboutScreen(
                                 onBackPress = {
                                     navigationState.navHostController.popBackStack()
+                                },
+                                onAuthorClick = {
+                                    navigationState.navigateTo(
+                                        Screen.AboutOwnerContent.route
+                                    )
+                                }
+                            )
+                        },
+                        aboutOwnerScreen = {
+                            AboutOwnerScreen(
+                                onBackPress = {
+                                    navigationState.navHostController.popBackStack()
                                 }
                             )
                         }
@@ -168,9 +181,7 @@ class MainActivity : ComponentActivity() {
 
         }
 
-
     }
-
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)

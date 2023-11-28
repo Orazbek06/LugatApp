@@ -166,7 +166,7 @@ fun HomeScreen(
                             onClick = { onAboutClick() }
                         ) {
                             Image(
-                                painter = painterResource(id = R.drawable.img_owner),
+                                painter = painterResource(id = R.drawable.ic_launcher),
                                 contentDescription = "Action",
                                 modifier = Modifier
                                     .size(34.dp)
@@ -174,10 +174,10 @@ fun HomeScreen(
                                     .border(
                                         width = 1.dp,
                                         color = Color(0xFFB2BBC6),
-                                        shape = RoundedCornerShape(
-                                            size = 100.dp
-                                        )
+                                        shape = CircleShape
                                     )
+                                    .background(Color.White, CircleShape)
+                                    .padding(2.dp)
                             )
                         }
                     },
@@ -478,7 +478,7 @@ fun ItemVocabulary(
         )
 
         Text(
-            text = data.russian,
+            text = data.uzbek,
             style = TextStyle(
                 fontSize = 16.sp,
                 lineHeight = 22.sp,
@@ -491,7 +491,7 @@ fun ItemVocabulary(
         )
 
         Text(
-            text = data.uzbek,
+            text = data.russian,
             style = TextStyle(
                 fontSize = 16.sp,
                 lineHeight = 22.sp,

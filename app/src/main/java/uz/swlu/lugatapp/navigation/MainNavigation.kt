@@ -12,7 +12,8 @@ fun MainNavigation(
     navController: NavHostController,
     homeScreen: @Composable () -> Unit,
     letterScreen: @Composable (String) -> Unit,
-    aboutScreen: @Composable () -> Unit
+    aboutScreen: @Composable () -> Unit,
+    aboutOwnerScreen: @Composable () -> Unit,
 ) {
     NavHost(navController = navController, Screen.HomeContent.route) {
 
@@ -22,6 +23,10 @@ fun MainNavigation(
 
         composable(Screen.AboutContent.route) {
             aboutScreen()
+        }
+
+        composable(Screen.AboutOwnerContent.route) {
+            aboutOwnerScreen()
         }
 
         composable(
@@ -44,6 +49,8 @@ sealed class Screen(val route: String) {
 
     object AboutContent : Screen(ABOUT_ROUTE)
 
+    object AboutOwnerContent : Screen(ABOUT_OWNER_ROUTE)
+
     object HomeContent : Screen(HOME_ROUTE)
 
     object LetterContent : Screen(LETTER_SCREEN_ROUTE) {
@@ -55,6 +62,7 @@ sealed class Screen(val route: String) {
     private companion object {
         const val HOME_ROUTE = "home_screen"
         const val ABOUT_ROUTE = "about"
+        const val ABOUT_OWNER_ROUTE = "about_owner"
         const val LETTER_SCREEN_ROUTE = "letters/{letter}"
     }
 }

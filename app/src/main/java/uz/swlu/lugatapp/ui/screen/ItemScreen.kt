@@ -122,12 +122,12 @@ fun ItemScreen(
             ) {
 
                 Image(
-                    painter = painterResource(id = R.drawable.ic_russian),
-                    contentDescription = "Russian"
+                    painter = painterResource(id = R.drawable.ic_uzbek),
+                    contentDescription = "Uzbek"
                 )
 
                 Text(
-                    text = wordsEntity.russian,
+                    text = wordsEntity.uzbek,
                     style = TextStyle(
                         fontSize = 18.sp,
                         fontWeight = FontWeight(510),
@@ -146,12 +146,12 @@ fun ItemScreen(
             ) {
 
                 Image(
-                    painter = painterResource(id = R.drawable.ic_uzbek),
-                    contentDescription = "Uzbek"
+                    painter = painterResource(id = R.drawable.ic_russian),
+                    contentDescription = "Russian"
                 )
 
                 Text(
-                    text = wordsEntity.uzbek,
+                    text = wordsEntity.russian,
                     style = TextStyle(
                         fontSize = 18.sp,
                         fontWeight = FontWeight(510),
